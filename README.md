@@ -1,4 +1,4 @@
 myb64
 =====
 
-C library for encoding to and decoding from base64
+C functions for encoding/decoding base64
