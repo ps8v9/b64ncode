@@ -143,14 +143,16 @@ size_t encoded_dest_size(const size_t src_len, const size_t line_size)
 }
 
 /*
- * decoded_dest_size: Calculate the minimum required size for a destination
+ * decoded_dest_size: Estimate the minimum required size for a destination
  *                    array to hold the results of decoding from base64.
  */
 size_t decoded_dest_size(const size_t src_len)
 {
-    /* 3 times the number of 4-byte blocks in the base64 (rounded up). */
-    /* TODO: Deduct 1 byte for each of up to 2 padding characters.     */
-    return (size_t)3 * ceil(src_len / 4.0);
+    /* Assuming no linebreaks or padding, max number of base64 blocks is: */
+    size_t blocks = ceil(src_len / 4.0);
+
+    /* Ratio of binary blocks : base64 blocks = 1:1. Binary block length = 3. */
+    return = blocks * 3;
 }
 
 /*
