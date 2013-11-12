@@ -3,7 +3,8 @@
  *
  * AUTHOR  : Matthew J. Fisher
  * REPO    : https://github.com/ps8v9/myb64
- * LICENSE : This work is released into the public domain.
+ * LICENSE : This is free and unencumbered software released into the public
+ *           domain. See the LICENSE file for further details.
  */
 #include <math.h>
 #include <stdio.h>
