@@ -152,7 +152,7 @@ size_t decoded_dest_size(const size_t src_len)
     size_t blocks = ceil(src_len / 4.0);
 
     /* Ratio of binary blocks : base64 blocks = 1:1. Binary block length = 3. */
-    return = blocks * 3;
+    return blocks * 3;
 }
 
 /*
