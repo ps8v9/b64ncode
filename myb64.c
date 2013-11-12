@@ -11,21 +11,21 @@
 #include <time.h>
 
 /* Functions to calculate the minimum sizes for destination arrays. */
-size_t encoded_dest_size(const size_t src_len, const size_t line_len);
+size_t encoded_dest_size(const size_t src_len, const size_t line_size);
 size_t decoded_dest_size(const size_t src_len);
 
 /* Functions for encoding from binary to base64. */
-char  sextet_to_base64(const char ch);
-size_t array_to_base64(const char *src, const size_t src_len,
-                       char *dest, const size_t dest_len,
-                       const size_t line_len);
+char encode_sextet(const char ch);
+size_t encode_array(const char *src_array, const size_t src_len,
+                    char *dest_array, const size_t dest_size,
+                    const size_t line_size);
 
 /* Functions for decoding from base64 to binary. */
-unsigned char base64_pair1_to_octet(const char ch1, const char ch2);
-unsigned char base64_pair2_to_octet(const char ch2, const char ch3);
-unsigned char base64_pair3_to_octet(const char ch3, const char ch4);
-size_t array_from_base64(const char *src, const size_t src_len,
-                         char *dest, const size_t dest_len);
+unsigned char decode_base64_pair1(const char ch1, const char ch2);
+unsigned char decode_base64_pair2(const char ch2, const char ch3);
+unsigned char decode_base64_pair3(const char ch3, const char ch4);
+size_t array_from_base64(const char *src_array, const size_t src_len,
+                         char *dest_array, const size_t dest_len);
 
 /* A main function to test the encoding/decoding functions. */
 int main()
@@ -38,15 +38,15 @@ int main()
     /* Hardcoded sizes. Adjust as needed. */
     const size_t binary_src_size = 12 * 1024 * 1024;
     const size_t base64_src_size = 16 * 1024 * 1024;
-    const size_t line_len = 72; /* Used when encoding base64; 0 = unbounded. */
+    const size_t line_size = 72; /* Used when encoding base64. */
 
     /* Data files, arrays, and variable sizes. */
     FILE *src_file;   /* File that contains data to be encoded/decoded.   */
     FILE *dest_file;  /* File where encoded/decoded data will be written. */
-    char *src;        /* Array to hold the data to be encoded/decoded.    */
-    char *dest;       /* Array to hold the encoded/decoded data.          */
-    size_t src_size;  /* Number of bytes to allocate for src.             */
-    size_t dest_size; /* Number of bytes to allocate for dest.            */
+    char *src_array;  /* Array to hold the data to be encoded/decoded.    */
+    char *dest_array; /* Array to hold the encoded/decoded data.          */
+    size_t src_size;  /* Number of bytes to allocate for src_array.       */
+    size_t dest_size; /* Number of bytes to allocate for dest_array.      */
     size_t src_len;   /* Actual length of the data to be encoded/decoded. */
     size_t cnt;       /* A counter used for various purposes.             */
 
@@ -54,97 +54,97 @@ int main()
     clock_t clock_start;
     clock_t clock_diff;
 
-    /* Allocate the src array. */
+    /* Allocate src_array. */
     src_size = binary_src_size;
-    src = (char *)malloc(src_size);
-    if (!src) return 1;
+    src_array = (char *)malloc(src_size);
+    if (!src_array) return 1;
 
-    /* Read binary data from a file into src. */
+    /* Read binary data from the binary file into src_array. */
     src_file = fopen(binary_file, "rb");
     if (!src_file) return 2;
-    src_len = fread(src, 1, src_size, src_file);
+    src_len = fread(src_array, 1, src_size, src_file);
     fclose(src_file);
 
-    /* Allocate the dest array. */
-    dest_size = encoded_dest_size(src_len, line_len);
-    dest = (char *)malloc(dest_size);
-    if (!dest) return 3;
+    /* Allocate dest_array. */
+    dest_size = encoded_dest_size(src_len, line_size);
+    dest_array = (char *)malloc(dest_size);
+    if (!dest_array) return 3;
 
-    /* Encode data from src (binary) into dest (NULL-terminated base64). */
+    /* Encode data from src_array into dest_array (NULL-terminated base64). */
     clock_start = clock();
-    cnt = array_to_base64(src, src_len, dest, dest_size, line_len);
+    cnt = encode_array(src_array, src_len, dest_array, dest_size, line_size);
     clock_diff = clock() - clock_start;
-    free(src);
-    src = NULL;
+    free(src_array);
+    src_array = NULL;
 
     printf("Encoded %ld bytes into %ld bytes in %f seconds\n",
            src_len, cnt, ((float)clock_diff) / CLOCKS_PER_SEC);
 
-    /* Write NULL-terminated base64-encoded data from dest to a text file. */
+    /* Write NULL-terminated base64 from dest_array to a text file. */
     dest_file = fopen(encoded_file, "w");
     if (!dest_file) return 4;
-    fwrite(dest, 1, cnt, dest_file);
+    fwrite(dest_array, 1, cnt, dest_file);
     fclose(dest_file);
-    free(dest);
-    dest = NULL;
+    free(dest_array);
+    dest_array = NULL;
 
-    /* Reallocate the src array. */
+    /* Reallocate src_array. */
     src_size = base64_src_size;
-    src = (char *)malloc(src_size + 1);
-    if (!src) return 5;
+    src_array = (char *)malloc(src_size + 1);
+    if (!src_array) return 5;
 
-    /* Read base64-encoded data from a text file into src. */
+    /* Read base64 data from the encoded file into src_array. */
     src_file = fopen(encoded_file, "r");
     if (!src_file) return 6;
-    src_len = fread(src, 1, src_size, src_file);
-    src[src_len] = '\0';
+    src_len = fread(src_array, 1, src_size, src_file);
+    src_array[src_len] = '\0';
     fclose(src_file);
 
-    /* Reallocate the dest array. */
-    dest_size = encoded_dest_size(src_len, line_len);
-    dest = (char *)malloc(dest_size);
-    if (!dest) return 7;
+    /* Reallocate dest_array. */
+    dest_size = encoded_dest_size(src_len, line_size);
+    dest_array = (char *)malloc(dest_size);
+    if (!dest_array) return 7;
 
-    /* Decode data from src (NULL-terminated base64) into dest (binary). */
+    /* Decode data from src_array (base64) into dest_array (binary). */
     clock_start = clock();
-    cnt = array_from_base64(src, src_len, dest, dest_size);
+    cnt = array_from_base64(src_array, src_len, dest_array, dest_size);
     clock_diff = clock() - clock_start;
-    free(src);
-    src = NULL;
+    free(src_array);
+    src_array = NULL;
 
     printf("Decoded %ld bytes into %ld bytes in %f seconds\n",
            src_len, cnt, ((float)clock_diff) / CLOCKS_PER_SEC);
 
-    /* Write decoded data from dest to a binary file. */
+    /* Write decoded data in binary mode from dest_array to a file. */
     dest_file = fopen(decoded_file, "wb");
     if (!dest_file) return 8;
-    fwrite(dest, 1, cnt, dest_file);
+    fwrite(dest_array, 1, cnt, dest_file);
     fclose(dest_file);
-    free(dest);
-    dest = NULL;
+    free(dest_array);
+    dest_array = NULL;
 
     return 0;
 }
 
 /*
- * encoded_dest_size:  Calculate the minimum required size for a destination
- *                     array to hold the results of encoding to base64.
+ * encoded_dest_size: Calculate the minimum required size for a destination
+ *                    array to hold the results of encoding to base64.
  */
-size_t encoded_dest_size(const size_t src_len, const size_t line_len)
+size_t encoded_dest_size(const size_t src_len, const size_t line_size)
 {
     /* 4 times the number of 3-byte blocks in the binary data (rounded up).*/
     size_t dest_size = (size_t)4 * ceil(src_len / 3.0);
-    if (line_len) {
-        dest_size += dest_size / line_len; /* 1 LF for each full line. */
-        if (dest_size % line_len)
-            ++dest_size; /* 1 LF for the underfull last line. */
+    if (line_size) {
+        dest_size += dest_size / line_size; /* 1 LF for each full line. */
+        if (dest_size % line_size)
+            ++dest_size;                    /* 1 LF for underfull last line. */
     }
-    return ++dest_size;  /* 1 byte for the NULL terminator */
+    return ++dest_size;                     /* 1 byte for the NULL terminator */
 }
 
 /*
- * decoded_dest_size:  Calculate the minimum required size for a destination
- *                     array to hold the results of decoding from base64.
+ * decoded_dest_size: Calculate the minimum required size for a destination
+ *                    array to hold the results of decoding from base64.
  */
 size_t decoded_dest_size(const size_t src_len)
 {
@@ -154,9 +154,9 @@ size_t decoded_dest_size(const size_t src_len)
 }
 
 /*
- * sextet_to_base64:  Encode a single sextet to a base64 character.
+ * encode_sextet: Encode a single sextet to a base64 character.
  */
-char sextet_to_base64(const char ch)
+char encode_sextet(const char ch)
 {
     if   ( 0 <= ch && ch <= 25) return ch + 65; /* 'A' through 'Z' */
     if   (26 <= ch && ch <= 51) return ch + 71; /* 'a' through 'z' */
@@ -166,15 +166,14 @@ char sextet_to_base64(const char ch)
 }
 
 /*
- * array_to_base64:  Encode from src (an array of binary bytes) into dest (a
- *                   NULL-terminated array of characters). If a valid line_len
- *                   is specified, LF linebreaks will be included in dest.
- *                   Returns the number of base64 characters placed into dest,
- *                   or -1 on error.
+ * encode_array: Encode from src_array (binary bytes) into dest_array (NULL-
+ *               terminated base64). If a valid line_size is specified, LF
+ *               linebreaks will be included in dest_array. Returns the number
+ *               of base64 characters placed into dest_array, or -1 on error.
  */
-size_t array_to_base64(const char *src, const size_t src_len,
-                       char *dest, const size_t dest_size,
-                       const size_t line_len)
+size_t encode_array(const char *src_array, const size_t src_len,
+                       char *dest_array, const size_t dest_size,
+                       const size_t line_size)
 {
     int    octet[3];
     char   sextet[4];
@@ -182,17 +181,17 @@ size_t array_to_base64(const char *src, const size_t src_len,
     int    j;
     size_t cnt;
 
-    if (src_len < 0 || dest_size < 1 || line_len < 0)
+    if (src_len < 0 || dest_size < 1 || line_size < 0)
         return -1; /* Bad input. */
 
-    if (line_len % 4 != 0)
-        return -1; /* Some decoders require line length to be a multiple of 4. */
+    if (line_size % 4 != 0)
+        return -1; /* Some decoders require lines to be a multiple of 4. */
 
     for (i = 0, cnt = 0; i < src_len; i += 3) {
         /* Get next 3 octets. Pad with zeroes as needed. */
-        octet[0] = src[i];
-        octet[1] = i + 1 < src_len ? src[i + 1] : 0;
-        octet[2] = i + 2 < src_len ? src[i + 2] : 0;
+        octet[0] = src_array[i];
+        octet[1] = i + 1 < src_len ? src_array[i + 1] : 0;
+        octet[2] = i + 2 < src_len ? src_array[i + 2] : 0;
 
         /* Convert two's complement bit patterns to signed positive. */
         for (j = 0; j < 3; j++)
@@ -206,27 +205,27 @@ size_t array_to_base64(const char *src, const size_t src_len,
         sextet[3] = octet[2] % 64;
 
         /* Encode each sextet as a base64 character. Pad as needed. */
-        dest[cnt++] = sextet_to_base64(sextet[0]);
-        dest[cnt++] = sextet_to_base64(sextet[1]);
-        dest[cnt++] = i + 1 < src_len ? sextet_to_base64(sextet[2]) : '=';
-        dest[cnt++] = i + 2 < src_len ? sextet_to_base64(sextet[3]) : '=';
+        dest_array[cnt++] = encode_sextet(sextet[0]);
+        dest_array[cnt++] = encode_sextet(sextet[1]);
+        dest_array[cnt++] = i + 1 < src_len ? encode_sextet(sextet[2]) : '=';
+        dest_array[cnt++] = i + 2 < src_len ? encode_sextet(sextet[3]) : '=';
 
-        if (line_len > 0)
+        if (line_size > 0)
           /* Insert an LF if current line is full, or is the last line. */
-          if ((cnt + 1) % (line_len + 1) == 0 || cnt == dest_size - 1)
-            dest[cnt++] = '\n';
+          if ((cnt + 1) % (line_size + 1) == 0 || cnt == dest_size - 2)
+            dest_array[cnt++] = '\n';
     }
 
-    dest[cnt] = '\0'; /* The null terminator is appended but not counted. */
+    dest_array[cnt] = '\0'; /* NULL terminator is appended but not counted. */
 
     return cnt;
 }
 
 /*
- * base64_pair1_to_octet:  Decode the first adjacent pair of base64 characters
- *                         from a 4-byte block.
+ * decode_base64_pair1: Decode the 1st adjacent pair of base64 characters from a
+ *                      4-byte block.
  */
-unsigned char base64_pair1_to_octet(const char ch1, const char ch2)
+unsigned char decode_base64_pair1(const char ch1, const char ch2)
 {
     unsigned char octet;
 
@@ -250,10 +249,10 @@ unsigned char base64_pair1_to_octet(const char ch1, const char ch2)
 }
 
 /*
- * base64_pair1_to_octet:  Decode the second adjacent pair of base64 characters
- *                         from a 4-byte block.
+ * decode_base64_pair1: Decode the 2nd adjacent pair of base64 characters from a
+ *                      4-byte block.
  */
-unsigned char base64_pair2_to_octet(const char ch2, const char ch3)
+unsigned char decode_base64_pair2(const char ch2, const char ch3)
 {
     unsigned char octet;
 
@@ -292,10 +291,10 @@ unsigned char base64_pair2_to_octet(const char ch2, const char ch3)
 }
 
 /*
- * base64_pair1_to_octet:  Decode the third adjacent pair of base64 characters
- *                         from a 4-byte block.
+ * decode_base64_pair1: Decode the 3rd adjacent pair of base64 characters from a
+ *                      4-byte block.
  */
-unsigned char base64_pair3_to_octet(const char ch3, const char ch4)
+unsigned char decode_base64_pair3(const char ch3, const char ch4)
 {
     unsigned char octet;
 
@@ -336,12 +335,12 @@ unsigned char base64_pair3_to_octet(const char ch3, const char ch4)
 }
 
 /*
- * array_from_base64:  Decode from src (an array of base64 characters) into
- *                     dest (an array of binary bytes). Returns the number of
- *                     bytes that were placed into dest, or -1 on error.
+ * array_from_base64: Decode from src_array (base64) into dest_array (binary).
+ *                    Returns the number of bytes that were placed into
+ *                    dest_array, or -1 on error.
  */
-size_t array_from_base64(const char *src, const size_t src_len,
-                         char *dest, const size_t dest_size)
+size_t array_from_base64(const char *src_array, const size_t src_len,
+                         char *dest_array, const size_t dest_size)
 {
     int cnt = 0;
 
@@ -354,7 +353,7 @@ size_t array_from_base64(const char *src, const size_t src_len,
 
     while (i < src_len) {
         /* Eat CRs and LFs. */
-        while ((src[i] == '\r' || src[i] == '\n') && i < src_len) {
+        while ((src_array[i] == '\r' || src_array[i] == '\n') && i < src_len) {
             ++i;
         }
 
@@ -364,7 +363,7 @@ size_t array_from_base64(const char *src, const size_t src_len,
         /* Get a 4-character block of base64. Eat embedded CRs and LFs. */
         for (j = 0; j < 4; ++j) {
             do {
-                ch[j] = src[i++];
+                ch[j] = src_array[i++];
             } while ((ch[j] == '\r' || ch[j] == '\n') && i < src_len);
 
             if (ch[j] == '\r' || ch[j] == '\n')
@@ -372,11 +371,11 @@ size_t array_from_base64(const char *src, const size_t src_len,
         }
 
         /* Decode the block. Skip padding characters. */
-        dest[cnt++] = base64_pair1_to_octet(ch[0], ch[1]);
+        dest_array[cnt++] = decode_base64_pair1(ch[0], ch[1]);
         if (ch[2] != '=')
-            dest[cnt++] = base64_pair2_to_octet(ch[1], ch[2]);
+            dest_array[cnt++] = decode_base64_pair2(ch[1], ch[2]);
         if (ch[3] != '=')
-            dest[cnt++] = base64_pair3_to_octet(ch[2], ch[3]);
+            dest_array[cnt++] = decode_base64_pair3(ch[2], ch[3]);
     }
 
     return cnt;
