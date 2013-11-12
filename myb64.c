@@ -132,11 +132,11 @@ int main()
  */
 size_t encoded_dest_size(const size_t src_len, const size_t line_len)
 {
-	/* 4 times the number of 3-byte blocks in the binary data (rounded up).*/
-	size_t dest_size = (size_t)4 * ceil(src_len / 3.0);
-	if (line_len) {
-	    dest_size += dest_size / line_len; /* 1 LF for each full line. */
-	    if (dest_size % line_len)
+    /* 4 times the number of 3-byte blocks in the binary data (rounded up).*/
+    size_t dest_size = (size_t)4 * ceil(src_len / 3.0);
+    if (line_len) {
+        dest_size += dest_size / line_len; /* 1 LF for each full line. */
+        if (dest_size % line_len)
             ++dest_size; /* 1 LF for the underfull last line. */
     }
     return ++dest_size;  /* 1 byte for the NULL terminator */
@@ -148,8 +148,8 @@ size_t encoded_dest_size(const size_t src_len, const size_t line_len)
  */
 size_t decoded_dest_size(const size_t src_len)
 {
-	/* 3 times the number of 4-byte blocks in the base64 (rounded up). */
-	/* TODO: Deduct 1 byte for each of up to 2 padding characters.     */
+    /* 3 times the number of 4-byte blocks in the base64 (rounded up). */
+    /* TODO: Deduct 1 byte for each of up to 2 padding characters.     */
     return (size_t)3 * ceil(src_len / 4.0);
 }
 
