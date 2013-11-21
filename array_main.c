@@ -6,7 +6,6 @@
  * LICENSE : This is free and unencumbered software released into the public
  *           domain. See the LICENSE file for further details.
  */
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
