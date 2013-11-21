@@ -1,3 +1,6 @@
+# Project-specific stuff
+*.mp3*
+
 # Object files
 *.o
 *.ko
