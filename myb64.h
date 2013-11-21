@@ -13,17 +13,21 @@
 size_t encoded_dest_size(const size_t src_len, const size_t line_size);
 size_t decoded_dest_size(const size_t src_len);
 
-/* Functions for encoding from binary to base64. */
+/* Functions for the lowest-level encoding/decoding operations. */
 char encode_sextet(const char ch);
-size_t encode_array(const char *src_array, const size_t src_len,
-                    char *dest_array, const size_t dest_size,
-                    const size_t line_size);
-
-/* Functions for decoding from base64 to binary. */
 unsigned char decode_base64_pair1(const char ch1, const char ch2);
 unsigned char decode_base64_pair2(const char ch2, const char ch3);
 unsigned char decode_base64_pair3(const char ch3, const char ch4);
-size_t array_from_base64(const char *src_array, const size_t src_len,
+
+/* Functions for encoding/decoding 24-bit blocks. */
+int  encode_block(const char *src_block, char *dest_block);
+int decode_block(const char *src_block, char *dest_block);
+
+/* Functions for encoding/decoding arrays of arbitrary size. */
+size_t encode_array(const char *src_array, const size_t src_len,
+                    char *dest_array, const size_t dest_size,
+                    const size_t line_size);
+size_t decode_array(const char *src_array, const size_t src_len,
                          char *dest_array, const size_t dest_len);
 
 #endif /* PS8_MYB64_H */

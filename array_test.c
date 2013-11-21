@@ -92,7 +92,7 @@ int main()
 
     /* Decode data from src_array (base64) into dest_array (binary). */
     clock_start = clock();
-    cnt = array_from_base64(src_array, src_len, dest_array, dest_size);
+    cnt = decode_array(src_array, src_len, dest_array, dest_size);
     clock_diff = clock() - clock_start;
     free(src_array);
     src_array = NULL;
