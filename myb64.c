@@ -9,9 +9,13 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "myb64.h"
+
+char binary_block[3];
+char base64_block[4];
 
 /*
  * encoded_dest_size: Calculate the minimum required size for a destination
@@ -82,7 +86,7 @@ unsigned char decode_base64_pair1(const char ch1, const char ch2)
 }
 
 /*
- * decode_base64_pair1: Decode the 2nd adjacent pair of base64 characters from a
+ * decode_base64_pair2: Decode the 2nd adjacent pair of base64 characters from a
  *                      4-byte block.
  */
 unsigned char decode_base64_pair2(const char ch2, const char ch3)
@@ -124,7 +128,7 @@ unsigned char decode_base64_pair2(const char ch2, const char ch3)
 }
 
 /*
- * decode_base64_pair1: Decode the 3rd adjacent pair of base64 characters from a
+ * decode_base64_pair3: Decode the 3rd adjacent pair of base64 characters from a
  *                      4-byte block.
  */
 unsigned char decode_base64_pair3(const char ch3, const char ch4)
@@ -165,6 +169,79 @@ unsigned char decode_base64_pair3(const char ch3, const char ch4)
     else                               ; /* '=' assumed */
 
     return octet;
+}
+
+/*
+ * get_binary_block: Get a block of 3 binary bytes. Zero-pad as needed.
+ */
+bool get_binary_block() {
+    int cnt;
+    bool result = true; /* Did we get a block? Assume success. */
+
+    for (cnt = 0; cnt < 3; ++cnt)
+        if ((binary_block[cnt] = getchar()) == EOF) {
+            if (cnt == 0) {
+                /* Got no block. */
+                result = false;
+            } else {
+                /* Underfull final block. Pad it. */
+                while (cnt < 3)
+                    binary_block[cnt++] = 0;
+            }
+        }
+
+     return result;
+}
+
+/*
+ * get_base64_block: Get a block of 4 base64 characters. Zero-pad as needed.
+ */
+int get_base64_block() {
+    int result = 1; /* Flag indicating that we got a full block. */
+    int cnt = 0;
+    char ch;
+
+    while (cnt < 4 && (ch = getchar()) != EOF)
+        if (ch != '\r' && ch != '\n')
+            base64_block[cnt++] = ch;
+
+    switch (cnt) {
+        case 4:
+             result = 1; /* Got a full block. */
+             break;
+        case 0:
+             result = 0; /* Got no block. */
+             break;
+        default:
+             result = -1; /* Truncated final block! */
+             break;
+    }
+
+    return result;
+}
+
+/*
+ * encode_block(): Encode the block. Skip padding characters. Return number of
+ *                 octets decoded.
+ */
+int  encode_block() {
+    return 0;
+}
+
+/*
+ * decode_block(): Decode the block. Skip padding characters. Return number of
+ *                 octets decoded.
+ */
+int decode_block() {
+    int cnt = 0;
+
+    binary_block[cnt++] = decode_base64_pair1(base64_block[0], base64_block[1]);
+    if (base64_block[2] != '=')
+        binary_block[cnt++] = decode_base64_pair2(base64_block[1], base64_block[2]);
+    if (base64_block[3] != '=')
+        binary_block[cnt++] = decode_base64_pair3(base64_block[2], base64_block[3]);
+
+    return cnt;
 }
 
 /*
@@ -269,3 +346,47 @@ size_t decode_array(const char *src_array, const size_t src_len,
 
     return cnt;
 }
+
+/*
+ * encode_stdin: Encode from stdin (binary) to stdout (base64).
+ */
+int encode_stdin() {
+    int i;
+
+    while (get_binary_block())
+        for (i = 0; i < 3; ++i) {
+            /* For now, just echo the (possibly padded) input. */
+            putchar(binary_block[i]);
+        }
+
+    return 0;
+}
+
+/*
+ * decode_stdin: Decode from stdin (base64) to stdout (binary). Returns 0 for
+ * success, and 1 if input (excluding CRs/LFs) was not a multiple of 4 bytes.
+ */
+int decode_stdin() {
+    int err_code = 0;
+    bool done = false;
+    int octets;
+    int i;
+
+    while (! done)
+        switch (get_base64_block()) {
+            case 1:  /* got a full block */
+                octets = decode_block();
+                for (i = 0; i < octets; ++i)
+                    putchar(binary_block[i]);
+                break;
+            case 0:  /* got no block */
+                done = true;
+                break;
+            default: /* input was not a multiple of 4 bytes */
+                err_code = 1;
+                break;
+        }
+
+    return err_code;
+}
+

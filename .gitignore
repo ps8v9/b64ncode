@@ -1,5 +1,6 @@
 # Project-specific stuff
 *.mp3*
+tmp.*
 
 # Object files
 *.o
