@@ -1,5 +1,5 @@
 /*
- * array_main.c : Test program for encoding/decoding base64 using arrays.
+ * array_test.c : Test program for encoding/decoding base64 using arrays.
  *
  * AUTHOR  : Matthew J. Fisher
  * REPO    : https://github.com/ps8v9/myb64
