@@ -55,62 +55,6 @@ char encode_sextet(const char ch)
 }
 
 /*
- * encode_array: Encode from src_array (binary bytes) into dest_array (NULL-
- *               terminated base64). If a valid line_size is specified, LF
- *               linebreaks will be included in dest_array. Returns the number
- *               of base64 characters placed into dest_array, or -1 on error.
- */
-size_t encode_array(const char *src_array, const size_t src_len,
-                       char *dest_array, const size_t dest_size,
-                       const size_t line_size)
-{
-    int    octet[3];
-    char   sextet[4];
-    int    i;
-    int    j;
-    size_t cnt;
-
-    if (src_len < 0 || dest_size < 1 || line_size < 0)
-        return -1; /* Bad input. */
-
-    if (line_size % 4 != 0)
-        return -1; /* Some decoders require lines to be a multiple of 4. */
-
-    for (i = 0, cnt = 0; i < src_len; i += 3) {
-        /* Get next 3 octets. Pad with zeroes as needed. */
-        octet[0] = src_array[i];
-        octet[1] = i + 1 < src_len ? src_array[i + 1] : 0;
-        octet[2] = i + 2 < src_len ? src_array[i + 2] : 0;
-
-        /* Convert two's complement bit patterns to signed positive. */
-        for (j = 0; j < 3; j++)
-            if (octet[j] < 0)
-                octet[j] += 256;
-
-        /* Expand 3 right-aligned octets to 4 right-aligned sextets. */
-        sextet[0] = octet[0] / 4;
-        sextet[1] = ((octet[0] % 4) * 16) + (octet[1] / 16);
-        sextet[2] = ((octet[1] % 16) * 4) + (octet[2] / 64);
-        sextet[3] = octet[2] % 64;
-
-        /* Encode each sextet as a base64 character. Pad as needed. */
-        dest_array[cnt++] = encode_sextet(sextet[0]);
-        dest_array[cnt++] = encode_sextet(sextet[1]);
-        dest_array[cnt++] = i + 1 < src_len ? encode_sextet(sextet[2]) : '=';
-        dest_array[cnt++] = i + 2 < src_len ? encode_sextet(sextet[3]) : '=';
-
-        if (line_size > 0)
-          /* Insert an LF if current line is full, or is the last line. */
-          if ((cnt + 1) % (line_size + 1) == 0 || cnt == dest_size - 2)
-            dest_array[cnt++] = '\n';
-    }
-
-    dest_array[cnt] = '\0'; /* NULL terminator is appended but not counted. */
-
-    return cnt;
-}
-
-/*
  * decode_base64_pair1: Decode the 1st adjacent pair of base64 characters from a
  *                      4-byte block.
  */
@@ -224,12 +168,68 @@ unsigned char decode_base64_pair3(const char ch3, const char ch4)
 }
 
 /*
- * array_from_base64: Decode from src_array (base64) into dest_array (binary).
- *                    Returns the number of bytes that were placed into
- *                    dest_array, or -1 on error.
+ * encode_array: Encode from src_array (binary bytes) into dest_array (NULL-
+ *               terminated base64). If a valid line_size is specified, LF
+ *               linebreaks will be included in dest_array. Returns the number
+ *               of base64 characters placed into dest_array, or -1 on error.
  */
-size_t array_from_base64(const char *src_array, const size_t src_len,
-                         char *dest_array, const size_t dest_size)
+size_t encode_array(const char *src_array, const size_t src_len,
+                       char *dest_array, const size_t dest_size,
+                       const size_t line_size)
+{
+    int    octet[3];
+    char   sextet[4];
+    int    i;
+    int    j;
+    size_t cnt;
+
+    if (src_len < 0 || dest_size < 1 || line_size < 0)
+        return -1; /* Bad input. */
+
+    if (line_size % 4 != 0)
+        return -1; /* Some decoders require lines to be a multiple of 4. */
+
+    for (i = 0, cnt = 0; i < src_len; i += 3) {
+        /* Get next 3 octets. Pad with zeroes as needed. */
+        octet[0] = src_array[i];
+        octet[1] = i + 1 < src_len ? src_array[i + 1] : 0;
+        octet[2] = i + 2 < src_len ? src_array[i + 2] : 0;
+
+        /* Convert two's complement bit patterns to signed positive. */
+        for (j = 0; j < 3; j++)
+            if (octet[j] < 0)
+                octet[j] += 256;
+
+        /* Expand 3 right-aligned octets to 4 right-aligned sextets. */
+        sextet[0] = octet[0] / 4;
+        sextet[1] = ((octet[0] % 4) * 16) + (octet[1] / 16);
+        sextet[2] = ((octet[1] % 16) * 4) + (octet[2] / 64);
+        sextet[3] = octet[2] % 64;
+
+        /* Encode each sextet as a base64 character. Pad as needed. */
+        dest_array[cnt++] = encode_sextet(sextet[0]);
+        dest_array[cnt++] = encode_sextet(sextet[1]);
+        dest_array[cnt++] = i + 1 < src_len ? encode_sextet(sextet[2]) : '=';
+        dest_array[cnt++] = i + 2 < src_len ? encode_sextet(sextet[3]) : '=';
+
+        if (line_size > 0)
+          /* Insert an LF if current line is full, or is the last line. */
+          if ((cnt + 1) % (line_size + 1) == 0 || cnt == dest_size - 2)
+            dest_array[cnt++] = '\n';
+    }
+
+    dest_array[cnt] = '\0'; /* NULL terminator is appended but not counted. */
+
+    return cnt;
+}
+
+/*
+ * decode_array: Decode from src_array (base64) into dest_array (binary).
+ *               Returns the number of bytes that were placed into dest_array,
+ *               or -1 on error.
+ */
+size_t decode_array(const char *src_array, const size_t src_len,
+                    char *dest_array, const size_t dest_size)
 {
     int cnt = 0;
 

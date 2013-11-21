@@ -12,7 +12,6 @@
 
 #include "myb64.h"
 
-/* A main function to test the encoding/decoding functions. */
 int main()
 {
     /* Hardcoded filenames. Edit as needed. */
