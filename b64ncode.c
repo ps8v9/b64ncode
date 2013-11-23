@@ -1,8 +1,8 @@
 /*
- * myb64.c : C functions for encoding and decoding base64.
+ * b64ncode.c : C functions for encoding and decoding base64.
  *
  * AUTHOR  : Matthew J. Fisher
- * REPO    : https://github.com/ps8v9/myb64
+ * REPO    : https://github.com/ps8v9/b64ncode
  * LICENSE : This is free and unencumbered software released into the public
  *           domain. See the LICENSE file for further details.
  */
@@ -12,7 +12,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "myb64.h"
+#include "b64ncode.h"
 
 char binary_block[3];
 char base64_block[4];

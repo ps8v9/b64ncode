@@ -2,7 +2,7 @@
  * stdin_test.c : Test program for encoding/decoding base64 using stdin/stdout.
  *
  * AUTHOR  : Matthew J. Fisher
- * REPO    : https://github.com/ps8v9/myb64
+ * REPO    : https://github.com/ps8v9/b64ncode
  * LICENSE : This is free and unencumbered software released into the public
  *           domain. See the LICENSE file for further details.
  */
@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "myb64.h"
+#include "b64ncode.h"
 
 extern char binary_block[];
 extern char base64_block[];

@@ -2,7 +2,7 @@
  * array_test.c : Test program for encoding/decoding base64 using arrays.
  *
  * AUTHOR  : Matthew J. Fisher
- * REPO    : https://github.com/ps8v9/myb64
+ * REPO    : https://github.com/ps8v9/b64ncode
  * LICENSE : This is free and unencumbered software released into the public
  *           domain. See the LICENSE file for further details.
  */
@@ -10,18 +10,18 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "myb64.h"
+#include "b64ncode.h"
 
 int main()
 {
     /* Hardcoded filenames. Edit as needed. */
-    const char *binary_file  = "Ps_04_Dunferlime.mp3";
-    const char *encoded_file = "Ps_04_Dunferlime.mp3.encoded.txt";
-    const char *decoded_file = "Ps_04_Dunferlime.mp3.decoded.mp3";
+    const char *binary_file  = "tables.ods";
+    const char *encoded_file = "tables.ods.encoded.txt";
+    const char *decoded_file = "tables.ods.decoded.ods";
 
     /* Hardcoded sizes. Adjust as needed. */
-    const size_t binary_src_size = 12 * 1024 * 1024;
-    const size_t base64_src_size = 16 * 1024 * 1024;
+    const size_t binary_src_size = 3 * 1024 * 1024;
+    const size_t base64_src_size = 4 * 1024 * 1024;
     const size_t line_size = 72; /* Used when encoding base64. */
 
     /* Data files, arrays, and variable sizes. */
@@ -61,7 +61,7 @@ int main()
     free(src_array);
     src_array = NULL;
 
-    printf("Encoded %ld bytes into %ld bytes in %f seconds\n",
+    printf("Encoded %ld bytes into %ld bytes in %.3f seconds\n",
            src_len, cnt, ((float)clock_diff) / CLOCKS_PER_SEC);
 
     /* Write NULL-terminated base64 from dest_array to a text file. */
@@ -96,7 +96,7 @@ int main()
     free(src_array);
     src_array = NULL;
 
-    printf("Decoded %ld bytes into %ld bytes in %f seconds\n",
+    printf("Decoded %ld bytes into %ld bytes in %.3f seconds\n",
            src_len, cnt, ((float)clock_diff) / CLOCKS_PER_SEC);
 
     /* Write decoded data in binary mode from dest_array to a file. */

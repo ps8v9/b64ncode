@@ -1,13 +1,13 @@
 /*
- * myb64.h : C functions for encoding and decoding base64.
+ * b64ncode.h : C functions for encoding and decoding base64.
  *
  * AUTHOR  : Matthew J. Fisher
- * REPO    : https://github.com/ps8v9/myb64
+ * REPO    : https://github.com/ps8v9/b64ncode
  * LICENSE : This is free and unencumbered software released into the public
  *           domain. See the LICENSE file for further details.
  */
-#ifndef PS8_MYB64_H
-#define PS8_MYB64_H
+#ifndef B64NCODE_H
+#define B64NCODE_H
 
 #include <stdbool.h>
 
@@ -38,4 +38,4 @@ size_t decode_array(const char *src_array, const size_t src_len,
 int encode_stdin();
 int decode_stdin();
 
-#endif /* PS8_MYB64_H */
+#endif /* B64NCODE_H */
